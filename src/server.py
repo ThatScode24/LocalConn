@@ -1,5 +1,6 @@
 import socket 
 import threading
+from datetime import datetime
 
 HEADER = 64
 PORT = 5050
@@ -14,9 +15,16 @@ server.bind(ADDR)
 
 
 def handle_client(conn, addr):
-    print(f"[NEW CONNECTION] {addr} connected.")
-
+    #to get nickname as first message
+    nickname_length = conn.recv(HEADER).decode()
+    if nickname_length:
+        nickname_length = int(nickname_length)
+        nickname = conn.recv(nickname_length).decode(FORMAT)
+        now = datetime.now()
+        time = now.strftime("%H:%M:%S")
+        print(f"[{time}]: {nickname}({addr[0]}) connected")
     connected = True
+    #then listen for other messages
     while connected:
         msg_length = conn.recv(HEADER).decode()
         if msg_length:

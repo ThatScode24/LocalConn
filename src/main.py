@@ -1,5 +1,9 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from connection import conn
+import socket
+
+PORT = 5050
+HEADER = 64
+FORMAT = 'utf-8'
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -38,8 +42,17 @@ class Ui_MainWindow(object):
             ip = self.NickName_2.toPlainText()
             self.NickName_2.clear()
             self.NickName.clear()
-            conn(ip)
-
+            ADDR = (f'{ip}', PORT)
+            print(ADDR)
+            client.connect(ADDR)
+            msg = nickname
+            message = msg.encode(FORMAT)
+            msg_length = len(message)
+            send_length = str(msg_length).encode(FORMAT)
+            send_length += b' ' * (HEADER - len(send_length))
+            client.send(send_length)
+            client.send(message)
+            
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -53,6 +66,7 @@ class Ui_MainWindow(object):
         self.Connect.setText(_translate("MainWindow", "Connect"))
 
 if __name__ == "__main__":
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     import sys
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
