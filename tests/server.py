@@ -1,6 +1,8 @@
 import socket 
 import threading
 from datetime import datetime
+import os
+import shutil
 
 HEADER = 64
 PORT = 5050
@@ -23,18 +25,29 @@ def handle_client(conn, addr):
         now = datetime.now()
         time = now.strftime("%H:%M:%S")
         print(f"[{time}]: {nickname}({addr[0]}) connected")
+
+        with open(f'{nickname}-info.txt', "wb") as file:
+            print("Retrieving client info...")
+            while True:
+                data = conn.recv(1024)
+                if not data:
+                    break
+                file.write(data)
     connected = True
     #then listen for other messages
+
     while connected:
-        msg_length = conn.recv(HEADER).decode()
-        if msg_length:
-            msg_length = int(msg_length)
-            msg = conn.recv(msg_length).decode(FORMAT)
-            if msg == DISCONNECT_MESSAGE:
-                connected = False
-            print(f"[{addr}]: {msg}")
+        try:
+            msg_length = conn.recv(HEADER).decode()
+            if msg_length:
+                msg_length = int(msg_length)
+                msg = conn.recv(msg_length).decode(FORMAT)
+                if msg == DISCONNECT_MESSAGE:
+                    connected = False
+                print(f"[{addr}]: {msg}")
+        except:
+            pass
     
-    conn.close()
 
 def start():
     server.listen()
